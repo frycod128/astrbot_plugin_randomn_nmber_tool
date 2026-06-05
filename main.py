@@ -12,8 +12,8 @@ from astrbot.core.agent.tool import ToolExecResult
 class RandomNumberTool(FunctionTool):
     name: str = "generate_random_number"
     description: str = (
-        "生成指定范围内的随机数。支持设置上下界和小数位数。"
-        "如果下界大于上界，会自动交换。参数缺失或无效时使用默认值。"
+        "生成随机数。"
+        "支持设置上下界和小数位数。"
     )
     parameters: dict = field(default_factory=lambda: {
         "type": "object",
@@ -83,7 +83,7 @@ class RandomNumberTool(FunctionTool):
             result_str = f"{result_num:.{decimals}f}"
 
         # 构建返回结果
-        message = f"随机数生成成功！\n范围：[{lower}, {upper}]\n小数位数：{decimals}\n结果：{result_str}"
+        message = f"随机数范围：[{lower}, {upper}]\n小数位数：{decimals}\n结果：{result_str}"
 
         return ToolExecResult(
             content=message,
