@@ -1,24 +1,98 @@
-from astrbot.api.event import filter, AstrMessageEvent, MessageEventResult
-from astrbot.api.star import Context, Star, register
-from astrbot.api import logger
+from __future__ import annotations
 
-@register("helloworld", "YourName", "一个简单的 Hello World 插件", "1.0.0")
-class MyPlugin(Star):
-    def __init__(self, context: Context):
-        super().__init__(context)
+import random
+from dataclasses import dataclass, field
+from typing import Optional
 
-    async def initialize(self):
-        """可选择实现异步的插件初始化方法，当实例化该插件类之后会自动调用该方法。"""
+from astrbot.api import FunctionTool
+from astrbot.core.agent.tool import ToolExecResult
 
-    # 注册指令的装饰器。指令名为 helloworld。注册成功后，发送 `/helloworld` 就会触发这个指令，并回复 `你好, {user_name}!`
-    @filter.command("helloworld")
-    async def helloworld(self, event: AstrMessageEvent):
-        """这是一个 hello world 指令""" # 这是 handler 的描述，将会被解析方便用户了解插件内容。建议填写。
-        user_name = event.get_sender_name()
-        message_str = event.message_str # 用户发的纯文本消息字符串
-        message_chain = event.get_messages() # 用户所发的消息的消息链 # from astrbot.api.message_components import *
-        logger.info(message_chain)
-        yield event.plain_result(f"Hello, {user_name}, 你发了 {message_str}!") # 发送一条纯文本消息
 
-    async def terminate(self):
-        """可选择实现异步的插件销毁方法，当插件被卸载/停用时会调用。"""
+@dataclass
+class RandomNumberTool(FunctionTool):
+    name: str = "generate_random_number"
+    description: str = (
+        "生成指定范围内的随机数。支持设置上下界和小数位数。"
+        "如果下界大于上界，会自动交换。参数缺失或无效时使用默认值。"
+    )
+    parameters: dict = field(default_factory=lambda: {
+        "type": "object",
+        "properties": {
+            "lower_bound": {
+                "type": "number",
+                "description": "随机数下界（最小值），默认为0",
+                "default": 0
+            },
+            "upper_bound": {
+                "type": "number",
+                "description": "随机数上界（最大值），默认为100",
+                "default": 100
+            },
+            "decimal_places": {
+                "type": "integer",
+                "description": "小数位数，0表示整数，默认为0",
+                "default": 0,
+                "minimum": 0,
+                "maximum": 10
+            }
+        }
+    })
+
+    async def call(
+            self,
+            context,  # ContextWrapper[AstrAgentContext] 类型，但这里不需要用到
+            lower_bound: Optional[float] = None,
+            upper_bound: Optional[float] = None,
+            decimal_places: Optional[int] = None
+    ) -> ToolExecResult:
+        # 参数处理：使用默认值或传入的值
+        lower = lower_bound if lower_bound is not None else 0
+        upper = upper_bound if upper_bound is not None else 100
+        decimals = decimal_places if decimal_places is not None else 0
+
+        # 验证并修正小数位数
+        try:
+            decimals = int(decimals)
+            if decimals < 0:
+                decimals = 0
+            if decimals > 10:
+                decimals = 10
+        except (ValueError, TypeError):
+            decimals = 0
+
+        # 验证数值有效性
+        try:
+            lower = float(lower)
+            upper = float(upper)
+        except (ValueError, TypeError):
+            lower = 0.0
+            upper = 100.0
+
+        # 交换上下界（如果下界大于上界）
+        if lower > upper:
+            lower, upper = upper, lower
+
+        # 生成随机数
+        if decimals == 0:
+            random_num = random.randint(int(lower), int(upper))
+            result_str = str(random_num)
+            result_num = random_num
+        else:
+            random_num = random.uniform(lower, upper)
+            result_num = round(random_num, decimals)
+            result_str = f"{result_num:.{decimals}f}"
+
+        # 构建返回结果
+        message = f"随机数生成成功！\n范围：[{lower}, {upper}]\n小数位数：{decimals}\n结果：{result_str}"
+
+        return ToolExecResult(
+            content=message,
+            data={
+                "success": True,
+                "value": result_num,
+                "value_str": result_str,
+                "lower_bound": lower,
+                "upper_bound": upper,
+                "decimal_places": decimals
+            }
+        )
