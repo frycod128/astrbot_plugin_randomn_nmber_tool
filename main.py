@@ -92,19 +92,11 @@ class RandomNumberTool(FunctionTool):
         )
 
 
-# 插件主类 - 必须继承 Star
 class RandomNumberPlugin(Star):
     name = "random_number_plugin"
-    version = "v1.0.0"
+    version = "v1.0.2"
     description = "随机数生成工具插件"
 
     def __init__(self, context: Context):
         super().__init__(context)
-        # 注册工具
-        self.random_tool = RandomNumberTool()
-        # 将工具添加到上下文
-        context.register_tool(self.random_tool)
-
-    async def terminate(self):
-        """插件卸载时的清理工作"""
-        pass
+        self.context.add_llm_tools(RandomNumberTool())
