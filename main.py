@@ -4,9 +4,9 @@ import random
 from dataclasses import dataclass, field
 from typing import Optional
 
+import mcp
 from astrbot.api import FunctionTool
 from astrbot.api.star import Star, Context
-from astrbot.core.agent.tool import ToolExecResult
 
 
 @dataclass
@@ -44,7 +44,7 @@ class RandomNumberTool(FunctionTool):
             lower_bound: Optional[float] = None,
             upper_bound: Optional[float] = None,
             decimal_places: Optional[int] = None
-    ) -> ToolExecResult:
+    ) -> mcp.types.CallToolResult:
         lower = lower_bound if lower_bound is not None else 0
         upper = upper_bound if upper_bound is not None else 100
         decimals = decimal_places if decimal_places is not None else 0
@@ -77,26 +77,21 @@ class RandomNumberTool(FunctionTool):
             result_num = round(random_num, decimals)
             result_str = f"{result_num:.{decimals}f}"
 
-        message = f"随机数范围：[{lower}, {upper}]\n小数位数：{decimals}\n结果：{result_str}"
+        message = f"随机数：{result_str}（范围：{lower} ~ {upper}，小数位数：{decimals}）"
 
-        return ToolExecResult(
-            content=message,
-            data={
-                "success": True,
-                "value": result_num,
-                "value_str": result_str,
-                "lower_bound": lower,
-                "upper_bound": upper,
-                "decimal_places": decimals
-            }
+        return mcp.types.CallToolResult(
+            content=[mcp.types.TextContent(type="text", text=message)]
         )
 
 
 class RandomNumberPlugin(Star):
     name = "random_number_plugin"
-    version = "v1.0.2"
+    version = "v1.0.3"
     description = "随机数生成工具插件"
 
     def __init__(self, context: Context):
         super().__init__(context)
-        self.context.add_llm_tools(RandomNumberTool())
+        context.add_llm_tools(RandomNumberTool())
+
+    async def terminate(self):
+        pass

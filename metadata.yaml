@@ -1,6 +1,6 @@
 name: astrbot_plugin_randomn_nmber_tool
 display_name: RandomnNmberTool
 desc: 随机数生成函数
-version: v1.0.2
+version: v1.0.3
 author: Frycod128
 repo: https://github.com/frycod128/astrbot_plugin_randomn_nmber_tool
