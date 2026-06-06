@@ -102,11 +102,9 @@ class RandomNumberTool(FunctionTool):
 
         # 格式化输出
         if cnt == 1:
-            result_str = str(result_list[0])
-            message = f"随机数：{result_str}（范围：{lower} ~ {upper}，小数位数：{decimals}）"
+            message = f"随机数：{result_list[0]}（范围：{lower} ~ {upper}，小数位数：{decimals}）"
         else:
-            result_str = str(result_list)
-            message = f"随机数列表：{result_str}（范围：{lower} ~ {upper}，小数位数：{decimals}，数量：{cnt}）"
+            message = f"随机数列表：{result_list}（范围：{lower} ~ {upper}，小数位数：{decimals}，数量：{cnt}）"
 
         # 返回结果
         return mcp.types.CallToolResult(
@@ -116,7 +114,6 @@ class RandomNumberTool(FunctionTool):
                     text=json.dumps({
                         "success": True,
                         "values": result_list,
-                        "values_str": result_str,
                         "count": cnt,
                         "lower_bound": lower,
                         "upper_bound": upper,
@@ -130,7 +127,7 @@ class RandomNumberTool(FunctionTool):
 # 插件主类
 class RandomNumberPlugin(Star):
     name = "random_number_plugin"
-    version = "v1.1.0"
+    version = "v1.1.1"
     description = "随机数生成工具插件"
 
     def __init__(self, context: Context):
