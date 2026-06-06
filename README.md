@@ -11,7 +11,7 @@
 | lower_bound | number | 0 | 下界（最小值） |
 | upper_bound | number | 100 | 上界（最大值） |
 | decimal_places | integer | 0 | 小数位数（0-10，0=整数） |
-
+| count | integer | 1 | 生成随机数的数量 |
 ## 特性
 
 - 参数缺失时自动使用默认值
